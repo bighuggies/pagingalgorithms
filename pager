@@ -1,0 +1,10 @@
+#!/bin/bash
+
+EXPECTED_ARGS=3
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+    python pager.py -h
+else
+    python pager.py $1 $2 $3
+fi
