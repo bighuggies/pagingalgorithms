@@ -2,22 +2,33 @@
 
 import argparse
 import random
-import datetime
 
 
 class FrameTable(object):
+    """Abstract base class implementing some behaviour for a frame table."""
+
     def __init__(self, size, output):
+        """Create a frame table.
+
+        Arguments:
+        size -- The number of frames to keep track of.
+        output -- The output object to keep track of the frame contents for
+        printing.
+
+        """
         self.frames = ['0' for x in xrange(size)]
         self.faults = 0
         self.output = output
 
     def access(self, page):
+        """Attempt to access a given page."""
         if page not in self.frames:
             self.insert(page)
 
         self.output.append(self.frames, page)
 
     def insert(self, page):
+        """Insert a page into the frame table."""
         self.faults += 1
         try:
             empty_frame = self.frames.index('0')
@@ -27,24 +38,35 @@ class FrameTable(object):
             self.frames[frame] = page
 
     def eject(self):
+        """Eject a frame from the frame table according to an algorithm."""
         # override
         pass
 
     def dump(self):
+        """Print the access table."""
         self.output.output(self.faults)
 
 
 class Rand(FrameTable):
+    """Frame table implementation which randomly ejects pages when there is a
+    page fault."""
+
     def eject(self):
         return random.randint(0, len(self.frames) - 1)
 
 
 class FIFO(FrameTable):
+    """Frame table implementation which ejects pages according to the order in
+    which they were inserted."""
+
     def eject(self):
         return (self.faults - 1) % len(self.frames)
 
 
 class LRU(FrameTable):
+    """Frame table implementation which ejects pages which have been the
+    least recently used."""
+
     def __init__(self, size, output):
         FrameTable.__init__(self, size, output)
         self.time = 0
@@ -62,6 +84,9 @@ class LRU(FrameTable):
 
 
 class Clock(FrameTable):
+    """Frame table implementation which ejects pages according to the clock
+    algorithm."""
+
     def __init__(self, size, output):
         FrameTable.__init__(self, size, output)
         self.clock = 0
@@ -81,6 +106,9 @@ class Clock(FrameTable):
 
 
 class Optimal(FrameTable):
+    """Frame table implementation which looks into the future in order to
+    implement the optimal page replacement algorithm."""
+
     def __init__(self, size, output):
         FrameTable.__init__(self, size, output)
         self.pages = []
@@ -116,6 +144,9 @@ class Optimal(FrameTable):
 
 
 class NFU(FrameTable):
+    """Frame table implementation which ejects pages according to the not
+    frequently used algorithm."""
+
     def __init__(self, size, output):
         FrameTable.__init__(self, size, output)
         self.accesses = {}
@@ -135,6 +166,9 @@ class NFU(FrameTable):
 
 
 class Output(object):
+    """Keeps track of the frame state after each page access in order to
+    print a pretty table."""
+
     def __init__(self, frames, algorithm, filename):
         self.info = 'frames: ' + str(frames) + ', algorithm: ' + algorithm + ', filename: ' + filename
         self.heading = []
@@ -175,16 +209,17 @@ class Output(object):
         else:
             return self._get_previous(row[:-1])
 
-algorithms = {
-    '0': {'name': 'RANDOM', 'impl': Rand},
-    '1': {'name': 'FIFO', 'impl': FIFO},
-    '2': {'name': 'LRU', 'impl': LRU},
-    '3': {'name': 'CLOCK', 'impl': Clock},
-    '4': {'name': 'OPTIMAL', 'impl': Optimal},
-    '5': {'name': 'NFU', 'impl': NFU},
-}
 
 if __name__ == '__main__':
+    algorithms = {
+        '0': {'name': 'RANDOM', 'impl': Rand},
+        '1': {'name': 'FIFO', 'impl': FIFO},
+        '2': {'name': 'LRU', 'impl': LRU},
+        '3': {'name': 'CLOCK', 'impl': Clock},
+        '4': {'name': 'OPTIMAL', 'impl': Optimal},
+        '5': {'name': 'NFU', 'impl': NFU},
+    }
+
     random.seed()
 
     parser = argparse.ArgumentParser(description='Simulates a number of different virtual memory page replacement algorithms.')
