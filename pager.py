@@ -234,6 +234,9 @@ if __name__ == '__main__':
 
     with open(args.source) as f:
         for c in f.read():
-            frame_table.access(c)
+            if c.strip():
+                print('Read: ' + c)
+
+                frame_table.access(c)
 
     frame_table.dump()
