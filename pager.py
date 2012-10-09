@@ -152,15 +152,15 @@ class NFU(FrameTable):
         self.accesses = {}
 
     def access(self, page):
+        FrameTable.access(self, page)
+
         if page in self.accesses:
             self.accesses[page] += 1
         else:
             self.accesses[page] = 1
 
-        FrameTable.access(self, page)
-
     def eject(self):
-        ejected_page = max(self.accesses, key=self.accesses.get)
+        ejected_page = min(self.accesses, key=self.accesses.get)
         del self.accesses[ejected_page]
         return self.frames.index(ejected_page)
 
@@ -235,8 +235,6 @@ if __name__ == '__main__':
     with open(args.source) as f:
         for c in f.read():
             if c.strip():
-                print('Read: ' + c)
-
                 frame_table.access(c)
 
     frame_table.dump()
